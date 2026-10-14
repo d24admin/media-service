@@ -186,30 +186,6 @@ X-User-Id: user-123
 
 Common response statuses are `400` for invalid input or cursors, `404` for unknown or unowned images, `409` when an upload object is not ready, `413` for an oversized image, `415` for unsupported or mismatched content, and `503` for a temporary storage or database failure.
 
-## Data model
-
-DynamoDB stores the fields required by the API and lifecycle:
-
-```text
-media_id
-owner_id
-status
-original_filename
-declared_content_type
-declared_size_bytes
-verified_content_type
-verified_size_bytes
-title
-tags
-created_at
-```
-
-`media_id` is the table key. The `owner-created-index` GSI uses `owner_id` as its partition key and `created_at` as its sort key, which supports owner isolation and newest-first listing. `created_at` is written only when completion succeeds, so pending records do not appear in the listing index.
-
-`original_filename` preserves the source file name and controls download naming. `title` is an optional user-facing label, so it can evolve independently from the uploaded file name.
-
-The implementation does not use S3 versioning, staging keys, final-object copies, or a publish-copy step. The object key is derived as `images/{media_id}`. Actual image content is inspected during completion rather than trusting the filename or declared content type.
-
 ## Local setup
 
 Prerequisites:
@@ -228,16 +204,6 @@ make local
 `make local` installs development dependencies when required, starts the current LocalStack image, builds the Lambda package, provisions S3, DynamoDB, IAM, Lambda, and API Gateway HTTP API resources, and prints the browser URL for the API Gateway/Lambda path. Provisioning is idempotent. No AWS account or production credentials are required for this local environment.
 
 Open the printed API Gateway URL in a browser. The bundled console is served by Lambda and its relative API requests therefore use API Gateway as well. It supports upload, metadata entry, filtering, pagination, preview, download, and deletion.
-
-### Local FastAPI versus LocalStack Lambda
-
-The project supports both paths:
-
-- `make local` uses LocalStack API Gateway and invokes the packaged `media-service-local` Lambda on demand. Lambda is not a continuously running server, and its CloudWatch log group is created only after the function is invoked.
-- `make local-fastapi` starts the local Uvicorn process at `http://127.0.0.1:8000` for application-level debugging. Requests made there do not run on Lambda.
-
-Application logs include the request method, path, status, duration, owner context, media ID, pagination totals, and upload lifecycle events. Signed URLs, request query strings, image bytes, and request bodies are intentionally excluded.
-
 
 To create repeatable demo data for multiple owners and pagination:
 
