@@ -1,0 +1,6 @@
+# Runtime dependencies packaged with the Lambda function.
+fastapi==0.143.0
+mangum==0.22.0
+boto3==1.43.97
+pydantic-settings==2.15.0
+Pillow==12.3.0

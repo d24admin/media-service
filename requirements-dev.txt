@@ -1,0 +1,7 @@
+# Local development and test dependencies.
+-r requirements.txt
+
+httpx>=0.28,<1
+pytest>=8.3,<10
+pytest-cov>=6,<8
+uvicorn[standard]>=0.34,<1
